@@ -33,7 +33,11 @@ int main() {
 	
 	temp_plat.position[2] = round( Sonar1.distance(timeout) * 1000 ) / 1000;  	    
 	
+	temp_plat.isValid = Sonar1.GetValidity();
+	
 	EstimatedVelocity( &temp_plat, &temp_plat_prev, &stack_z, &first, tm, &integral_z );
+
+	handler.publish("platform/Z_position",&temp_plat);
 
 	std::cout << "Platform z position:" << std::endl;
     std::cout << temp_plat.position[2] << std::endl;
