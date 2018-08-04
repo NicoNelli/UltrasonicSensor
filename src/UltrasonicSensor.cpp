@@ -1,9 +1,7 @@
 #include <iostream>
 #include <wiringPi.h>
 #include "UltrasonicSensor.h"
-
 #define SpeedOfSound 343.00
-
 
 UltrasonicSensor::UltrasonicSensor( int trigger, int echo ) {
 
@@ -81,6 +79,49 @@ return isValid;
 }
 
 
+void mean(double& sum,double plus,double minus){
+
+    sum += plus - minus;
+
+}
+
+void EstimatedVelocity(geometry::pose *Actual_plat, geometry::pose *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z ) {
+
+	int window = 6;
+
+	if( *flag ) {
+		
+		Actual_plat->velocity[0] = 0;
+		Actual_plat->velocity[0] = 0;
+		Actual_plat->velocity[0] = 0;
+		*flag = false;
+	}
+	else {
+		
+		double dz = Actual_plat->position[2] - Prev_plat->position[2];
+		double vz = dz/time._dt;
+
+		std::cout<<"dz: "<<dz<<std::endl;
+		std::cout<<"vz: "<<vz<<std::endl;
+		std::cout<<"time: "<<time._dt<<std::endl;
+
+
+		//mean for smoothing
+		if (queue_t->size() == window) {
+            
+			mean(*int_z , vz, queue_t->front()); //return the oldest element of the FIFO queue
+			queue_t->pop(); //it removes the oldest method.
+        
+		}else
+            mean(*int_z,vz,0);		
+
+		queue_t->push(vz);
+		Actual_plat->velocity[2] = *int_z/queue_t->size();
+	}
+
+	Prev_plat->position[2] = Actual_plat->position[2];
+
+}
 
 
 
