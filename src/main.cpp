@@ -2,7 +2,7 @@
 #include <wiringPi.h>
 #include "UltrasonicSensor.h"
 #include "lcm/lcm-cpp.hpp"
-#include "lcm_messages/geometry/pose.hpp"
+#include "lcm_messages/geometry/UltrasonicPosition.hpp"
 #include "utils/TimeHelpers.hpp"
 #include <queue>
 #include <cmath>
@@ -12,8 +12,8 @@
 #define timeout 100 //timeout in milliseconds.
 
 lcm::LCM handler; 
-geometry::pose temp_plat;
-geometry::pose temp_plat_prev;
+geometry::UltrasonicPosition temp_plat;
+geometry::UltrasonicPosition temp_plat_prev;
 TimeManager tm;
 
 bool first = true;
@@ -31,18 +31,21 @@ int main() {
 	
 	tm.updateTimer();	
 	
-	temp_plat.position[2] = round( Sonar1.distance(timeout) * 1000 ) / 1000;  	    
+	temp_plat.Z_Position = round( Sonar1.distance(timeout) * 1000 ) / 1000;  	    
 	
 	temp_plat.isValid = Sonar1.GetValidity();
 	
 	EstimatedVelocity( &temp_plat, &temp_plat_prev, &stack_z, &first, tm, &integral_z );
 
-	handler.publish("platform/Z_position",&temp_plat);
+	handler.publish("UltrasonicSensor/platform",&temp_plat);
 
+
+	//DEBUG:
 	std::cout << "Platform z position:" << std::endl;
-    std::cout << temp_plat.position[2] << std::endl;
+    std::cout << "valid:"<<temp_plat.isValid<<std::endl;
+    std::cout << temp_plat.Z_Position << std::endl;
     std::cout << "Platform z velo:" << std::endl;
-    std::cout << temp_plat.velocity[2] << std::endl;	
+    std::cout << temp_plat.Z_Velocity << std::endl;	
 
 
 
