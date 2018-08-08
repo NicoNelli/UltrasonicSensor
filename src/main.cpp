@@ -9,7 +9,7 @@
 
 #define trigger 23	//pin of the raspberry for trigger signal.
 #define echo 24 	//pin of the raspberry for echo signal.
-#define timeout 100 //timeout in milliseconds.
+#define timeout 150 //timeout in milliseconds.
 
 lcm::LCM handler; 
 geometry::UltrasonicPosition temp_plat;
