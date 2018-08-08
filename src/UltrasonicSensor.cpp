@@ -85,25 +85,26 @@ void mean(double& sum,double plus,double minus){
 
 }
 
-void EstimatedVelocity(geometry::pose *Actual_plat, geometry::pose *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z ) {
+void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::UltrasonicPosition *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z ) {
 
 	int window = 6;
 
 	if( *flag ) {
 		
-		Actual_plat->velocity[0] = 0;
-		Actual_plat->velocity[0] = 0;
-		Actual_plat->velocity[0] = 0;
+		Actual_plat->Z_Velocity = 0;
+		Actual_plat->Z_Velocity = 0;
+		Actual_plat->Z_Velocity = 0;
 		*flag = false;
 	}
 	else {
 		
-		double dz = Actual_plat->position[2] - Prev_plat->position[2];
+		double dz = Actual_plat->Z_Position - Prev_plat->Z_Position;
 		double vz = dz/time._dt;
-
-		std::cout<<"dz: "<<dz<<std::endl;
-		std::cout<<"vz: "<<vz<<std::endl;
-		std::cout<<"time: "<<time._dt<<std::endl;
+		
+		//DEBUG:
+		//std::cout<<"dz: "<<dz<<std::endl;
+		//std::cout<<"vz: "<<vz<<std::endl;
+		//std::cout<<"time: "<<time._dt<<std::endl;
 
 
 		//mean for smoothing
@@ -116,10 +117,10 @@ void EstimatedVelocity(geometry::pose *Actual_plat, geometry::pose *Prev_plat, s
             mean(*int_z,vz,0);		
 
 		queue_t->push(vz);
-		Actual_plat->velocity[2] = *int_z/queue_t->size();
+		Actual_plat->Z_Velocity = *int_z/queue_t->size();
 	}
 
-	Prev_plat->position[2] = Actual_plat->position[2];
+	Prev_plat->Z_Position = Actual_plat->Z_Position;
 
 }
 
