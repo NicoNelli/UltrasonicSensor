@@ -1,7 +1,7 @@
 #ifndef ULTRASONICSENSOR_H
 #define ULTRASONICSENSOR_H
 
-#include "lcm_messages/geometry/pose.hpp"
+#include "lcm_messages/geometry/UltrasonicPosition.hpp"
 #include "lcm/lcm-cpp.hpp"
 #include <queue>
 #include "utils/TimeHelpers.hpp"
@@ -47,7 +47,7 @@ Parameters:
 4) flag to control the first time the function is used.
 5) time object to obtain dt for computing the temporal derivative. 
 */
-void EstimatedVelocity(geometry::pose *Actual_plat, geometry::pose *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z);
+void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::UltrasonicPosition *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z);
 
 //mean value.
 void mean(double& sum,double plus,double minus);
