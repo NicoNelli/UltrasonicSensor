@@ -6,56 +6,98 @@
 #include "utils/TimeHelpers.hpp"
 #include <queue>
 #include <cmath>
+#include <pthread.h>
+#include <sys/time.h>
 
-#define trigger 23	//pin of the raspberry for trigger signal.
-#define echo 24 	//pin of the raspberry for echo signal.
-#define timeout 150 //timeout in milliseconds.
+#define SpeedOfSound 343.00
 
-lcm::LCM handler; 
-geometry::UltrasonicPosition temp_plat;
-geometry::UltrasonicPosition temp_plat_prev;
+Ultrasonic_Sensor Sonar1;
+
+bool distanceComputed = false; 
+
+bool previousState;
+
+//Initialize
+pthread_cond_t distancePerformed = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+
+long count = 0;
+
+void Interrupt_Handler(void) {
+	unsigned int t = micros();
+	count++;
+
+	if ( previousState == false){
+		Sonar1.startTimeUsec = t;
+		previousState = true;		
+		
+	} else if(  previousState == true){
+			Sonar1.endTimeUsec = t;
+			previousState = false;
+			distanceComputed = true;
+	
+			pthread_mutex_lock(&m);	
+			Sonar1.travelTimeUsec = Sonar1.endTimeUsec - Sonar1.startTimeUsec;
+			Sonar1.distanceMeters = ( (Sonar1.travelTimeUsec/1000000.0)*SpeedOfSound )/2;			
+			
+			pthread_cond_signal(&distancePerformed);		
+			pthread_mutex_unlock(&m);
+
+	}
+
+
+}
+
+
 TimeManager tm;
 
 bool first = true;
-typedef std::queue<double> queue_t; //it allows to implement FIFO access.
-queue_t stack_z;
-double integral_z = 0;
+
+struct timeval tv;
+struct timespec ts;
 
 int main() {
 
-	UltrasonicSensor Sonar1(trigger, echo);
+	double localDist;
+	bool done = Init(&Sonar1);
 
-	tm.updateTimer();	
-
-	while(1){
+	if (done) { //if the initialization goes well
+		
+		wiringPiISR(Sonar1.echo, INT_EDGE_BOTH, Interrupt_Handler); // set interrupt for both raising edge
 	
-	tm.updateTimer();	
+
+
+		while(1) {
+
+				previousState = false;
+				
+				Init_distance(&Sonar1);
+
+				struct timeval tv;
+				struct timespec ts;
+
+				gettimeofday(&tv, NULL);
+				ts.tv_sec = time(NULL) + 150 / 1000;
+				ts.tv_nsec = tv.tv_usec*1000 + 1000*1000 * (150 % 1000);
+				ts.tv_sec += ts.tv_nsec / (1000 * 1000 * 1000);
+				ts.tv_nsec %= (1000 * 1000 * 1000);
+				
+
+				pthread_mutex_lock(&m);	
+				pthread_cond_timedwait(&distancePerformed, &m, &ts);
+				pthread_mutex_unlock(&m);
 	
-	temp_plat.Z_Position = round( Sonar1.distance(timeout) * 1000 ) / 1000;  	    
+
+				std::cout<<"distance: "<<Sonar1.distanceMeters<<std::endl;								
+
+				distanceComputed = false;
+			
+				usleep(100*1000); //10 Hz
+		}
 	
-	temp_plat.isValid = Sonar1.GetValidity();
-	
-	EstimatedVelocity( &temp_plat, &temp_plat_prev, &stack_z, &first, tm, &integral_z );
-
-	handler.publish("UltrasonicSensor/platform",&temp_plat);
-
-
-	//DEBUG:
-	std::cout << "Platform z position:" << std::endl;
-    std::cout << "valid:"<<temp_plat.isValid<<std::endl;
-    std::cout << temp_plat.Z_Position << std::endl;
-    std::cout << "Platform z velo:" << std::endl;
-    std::cout << temp_plat.Z_Velocity << std::endl;	
-
 
 
 	}
 	
 
-	/*
-	long now = micros();    
-	std::cout<<"distance in meters: "<<Sonar1.distance(timeout)<<std::endl;	
-	std::cout<<"Time necessary: "<<(micros()-now)/1000000.0<<" s"<<std::endl;	
-	std::cout<<"is Valid the measure? "<<Sonar1.GetValidity()<<std::endl;
-	*/
 }

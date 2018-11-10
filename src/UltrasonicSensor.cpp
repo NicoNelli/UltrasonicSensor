@@ -3,79 +3,75 @@
 #include "UltrasonicSensor.h"
 #define SpeedOfSound 343.00
 
-UltrasonicSensor::UltrasonicSensor( int trigger, int echo ) {
+bool Init( Ultrasonic_Sensor * Sonar ) {
 
 	wiringPiSetupGpio();
 	//it allows the calling program to use broadcom GPIO pins numbers directly
 	//with no re-mapping.
 
-	this->trigger = trigger; //set TRIG pin
+	Sonar->trigger = TRIGGER_PIN; 
 
-	this->echo = echo; // set ECHO pin
+	Sonar->echo = ECHO_PIN;
+	
+	Sonar->timeout = TIMEOUT;
 
-	pinMode( trigger, OUTPUT ); //set TRIG pin as output
+	pinMode( Sonar->trigger, OUTPUT ); //set TRIG pin as output
 
-	pinMode( echo, INPUT ); //set ECHO pin as output
+	pinMode( Sonar->echo, INPUT ); //set ECHO pin as output
 
 	//ensure that, initially, the TRIG pin is set low, and give some time to
 	// settle the sensor.
-	digitalWrite( trigger, LOW ); 
+	digitalWrite( Sonar->trigger, LOW ); 
 
 	delay(500); //delay in milliseconds.
 	
+	return true;
 }
 
-void UltrasonicSensor::TimeOfTravel() {
 
-	startTimeUsec = micros();
+void TimeOfTravel( Ultrasonic_Sensor * Sonar ) {
+
+	Sonar->startTimeUsec = micros();
 	
-	while ( digitalRead(echo) == HIGH );
+	while ( digitalRead(Sonar->echo) == HIGH );
 	
-	endTimeUsec = micros();
+	Sonar->endTimeUsec = micros();
 
 }
 
-bool UltrasonicSensor::isExpired( int timeout, long time ) { 
+bool isExpired( Ultrasonic_Sensor * Sonar , long time ) { 
 //it checks if the timeout is expired. 	
 
-isValid = ( micros() - time )/1000.0 < timeout;
+bool timerExpired = ( micros() - time )/1000.0 > Sonar->timeout;
 
-return isValid;
+Sonar->isValid = timerExpired;
+
+return timerExpired;
 }
 
-double UltrasonicSensor::distance( int timeout) {
+void Init_distance( Ultrasonic_Sensor * Sonar ) {
 
 	//firstly, transmit at least 10us high level pulse to the trigger pin.
 	//the sensor requires a short 10us pulse to trigger the module.
 	//these three functions do this for us.
 	delay(10);
 
-	digitalWrite( trigger, HIGH );
+	digitalWrite( Sonar->trigger, HIGH );
 
 	delayMicroseconds(20);
 
-	digitalWrite( trigger, LOW);
+	digitalWrite( Sonar->trigger, LOW);
 
 	//taking the actual time.
-	now = micros();    
 	
 	//The sensor sets ECHO to high for the amount of time it takes for the pulse to go and 		come back, so it is necessary to measure the amount of time that the ECHO pin stays high.
-	while ( digitalRead(echo) == LOW && isExpired( timeout,now ) );	
-	TimeOfTravel();
-
-
-	travelTimeUsec = endTimeUsec - startTimeUsec;
-	
-	distanceMeters = ( (travelTimeUsec/1000000.0)*SpeedOfSound )/2;
-
-	return distanceMeters;	
 
 }
 
 
-bool UltrasonicSensor::GetValidity() const {
+bool GetValidity( Ultrasonic_Sensor * Sonar ) {
 
-return isValid;
+return Sonar->isValid;
 }
 
 
@@ -84,6 +80,7 @@ void mean(double& sum,double plus,double minus){
     sum += plus - minus;
 
 }
+
 
 void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::UltrasonicPosition *Prev_plat, std::queue<double> *queue_t, bool *flag, const TimeManager& time, double *int_z ) {
 
