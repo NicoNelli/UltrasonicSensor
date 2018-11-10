@@ -26,19 +26,22 @@ rqt_plot  /UltrasonicSensor_filtr/z_Velocity /UltrasonicSensor/z_Velocity
 
 ##### Kalman filter with position and velocity as state variable
 
-##### actual measurement and velocity estimated after
+##### Actual measurement and velocity estimated after
 
 ##### Avarage median filter for position, velocity estimated after with difference quotience
+
+###### For plotting position:
 
 ```
 main_FullPosition.cpp:
 
-for plotting position:
-
 rqt_plot  /UltrasonicSensor_Pos_filtr/z_Position /UltrasonicSensor_Full_filtr/z_Position /UltrasonicSensor/z_Position
+```
 
-for plotting velocity:
+###### For plotting velocity:
 
+```
+main_FullPosition.cpp:
 
 rqt_plot  /UltrasonicSensor_Pos_filtr/z_Velocity /UltrasonicSensor_Full_filtr/z_Velocity /UltrasonicSensor/z_Velocity
 ```
