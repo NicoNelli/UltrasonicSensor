@@ -1,6 +1,6 @@
 # UltrasonicSensor module for Raspberry Pi with filtering techniques
 
-## Apply different filtering techniques and compared them
+## Apply different filtering techniques and compared them. Polling method is used to take the measurement from the sensor
 
 ### Comparisons:
 
