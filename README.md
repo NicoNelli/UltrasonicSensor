@@ -1,6 +1,6 @@
 # UltrasonicSensor module for Raspberry Pi
 
-It returns the distance and the estimated velocity on the z axis.
+## Data acquisition via interrupt handler 
 
+### It returns the distance obtained from the ultrasonic sensor with acquisition rate 10 Hz. 
 
-It publishes the results on a lcm topic.
