@@ -4,18 +4,23 @@
 
 ### Comparisons:
 
-#### It contains two different basic kalman filter(only position) and does comparisons between two different filtered position and the actual measurement:
-
 ```
 main_position.cpp:
 
 rqt_plot  /UltrasonicSensor_filtr2/z_Position /UltrasonicSensor_filtr/z_Position /UltrasonicSensor/z_Position 
 ```
+#### It contains two different basic kalman filter(only position) and does comparisons between two different filtered position and the actual measurement:
+
+```
+main_velocity.cpp:
+
+rqt_plot  /UltrasonicSensor_filtr/z_Velocity /UltrasonicSensor/z_Velocity 
+```
 
 #### It containts one basic kalman filter (only position) and does comparisons between the velocity obtained by the filtered position(difference quotience) and the noised velocity(not filtered position):
 
 ```
-main_velocity.cpp:
+main_fullKalman.cpp:
 
 rqt_plot  /UltrasonicSensor_filtr/z_Velocity /UltrasonicSensor/z_Velocity 
 ```
@@ -30,19 +35,16 @@ rqt_plot  /UltrasonicSensor_filtr/z_Velocity /UltrasonicSensor/z_Velocity
 
 ##### Avarage median filter for position, velocity estimated after with difference quotience
 
-###### For plotting position:
+
+### For plotting position:
 
 ```
-main_FullPosition.cpp:
-
 rqt_plot  /UltrasonicSensor_Pos_filtr/z_Position /UltrasonicSensor_Full_filtr/z_Position /UltrasonicSensor/z_Position
 ```
 
 ###### For plotting velocity:
 
 ```
-main_FullPosition.cpp:
-
 rqt_plot  /UltrasonicSensor_Pos_filtr/z_Velocity /UltrasonicSensor_Full_filtr/z_Velocity /UltrasonicSensor/z_Velocity
 ```
 
@@ -52,7 +54,11 @@ rqt_plot  /UltrasonicSensor_Pos_filtr/z_Velocity /UltrasonicSensor_Full_filtr/z_
 main_finalKalman.cpp
 ```
 
+#### The script which is dedicated to communicate with mocap2mav repository:
 
+```
+mainMocap2mav.cpp
+```
 
 
 

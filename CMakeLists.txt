@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
+
+set(CMAKE_CXX_FLAGS "-g -Wall")
+
 project(ultrasonic_sensor)
 add_definitions(-std=c++11)
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -17,8 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
 
 )
 
+#add_subdirectory(libs/DspFilters)
+
 find_package(OpenCV REQUIRED)
 find_package(Eigen REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LCM REQUIRED lcm)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -137,8 +145,6 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(LCM REQUIRED lcm)
 
 set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
 if(M2M_INCLUDE)            
@@ -148,16 +154,23 @@ else()
  message(FATAL_ERROR "Undefined M2M_INCLUDE env var. HINT: export M2M_INCLUDE=/path/to/mocap2mav/include")
 endif()
 
+include_directories(include )
 
 
-include_directories(include)
-set(SOURCE_FILES  src/UltrasonicSensor.cpp include/UltrasonicSensor.h )
+#set(SOURCE_FILES  source/UltrasonicSensor.cpp include/UltrasonicSensor.h include/utils.h source/utils.cpp)
+
+file(GLOB SOURCE_FILES include/"*.h" "source/*.cpp")
+
 add_library(UltrasonicSensor ${SOURCE_FILES})
 
+
+
 find_library(wiringPi_LIB wiringPi)
+
 target_link_libraries(UltrasonicSensor ${wiringPi_LIB} 
 									   ${Eigen_LIBRARIES}
-                                       ${OpenCV_LIBRARIES})
+                                       ${OpenCV_LIBRARIES}
+									   ${LCM_LIBRARIES})
 
 
 
@@ -165,23 +178,30 @@ target_link_libraries(UltrasonicSensor ${wiringPi_LIB}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-#add_executable(${PROJECT_NAME}_node_velocity src/main_velocity.cpp)
+add_executable(${PROJECT_NAME}_node_velocity validation/main_velocity.cpp)
 
-#add_executable(${PROJECT_NAME}_node_position src/main_position.cpp)
+#add_executable(${PROJECT_NAME}_node_position validation/main_position.cpp)
 
-#add_executable(${PROJECT_NAME}_node_fullKalman src/main_fullKalman.cpp)
+#add_executable(${PROJECT_NAME}_node_validationPosition validation/validationPosition.cpp)
+
+#add_executable(${PROJECT_NAME}_node_validationVelocity validation/validationVelocity.cpp)
 
 add_executable(${PROJECT_NAME}_node_finalKalman src/main_finalKalman.cpp)
 
+add_executable(${PROJECT_NAME}_node_Mocap2mav src/mainMocap2mav.cpp)
 
+
+target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor)
 
 target_link_libraries(${PROJECT_NAME}_node_finalKalman UltrasonicSensor)
 
-#target_link_libraries(${PROJECT_NAME}_node_fullKalman UltrasonicSensor)
+#target_link_libraries(${PROJECT_NAME}_node_validationVelocity UltrasonicSensor)
 
 #target_link_libraries(${PROJECT_NAME}_node_position UltrasonicSensor)
 
-#target_link_libraries(${PROJECT_NAME}_node_velocity UltrasonicSensor)
+#target_link_libraries(${PROJECT_NAME}_node_validationPosition UltrasonicSensor)
+
+target_link_libraries(${PROJECT_NAME}_node_velocity UltrasonicSensor)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -196,20 +216,27 @@ target_link_libraries(${PROJECT_NAME}_node_finalKalman UltrasonicSensor)
 ## Specify libraries to link a library or executable target against
  
 #target_link_libraries(${PROJECT_NAME}_node_position
+ # ${catkin_LIBRARIES}
+#)
+
+#target_link_libraries(${PROJECT_NAME}_node_validationPosition
+ #  ${catkin_LIBRARIES}
+#)
+
+#target_link_libraries(${PROJECT_NAME}_node_validationVelocity
 #   ${catkin_LIBRARIES}
 #)
 
-# target_link_libraries(${PROJECT_NAME}_node_velocity
-#   ${catkin_LIBRARIES}
-#)
-
-#target_link_libraries(${PROJECT_NAME}_node_fullKalman
-#   ${catkin_LIBRARIES}
-#)
-
-
- target_link_libraries(${PROJECT_NAME}_node_finalKalman
+target_link_libraries(${PROJECT_NAME}_node_velocity
    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(${PROJECT_NAME}_node_finalKalman
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(${PROJECT_NAME}_node_Mocap2mav
+  ${catkin_LIBRARIES}
 )
 
 
