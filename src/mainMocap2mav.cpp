@@ -7,7 +7,7 @@
 #include <queue>
 #include <cmath>
 #include "rclcpp/rclcpp.hpp"
-#include "ultrasonic_sensor/msg/UltrasonicMsg.hpp"
+#include "ultrasonic_sensor/msg/ultrasonic_msg.hpp"
 #include "MedianFilter.h"
 
 /************************************************************
@@ -66,9 +66,9 @@ int main(int argc, char **argv) {
     auto state_filtr = std::make_shared<ultrasonic_sensor::msg::UltrasonicMsg>();
 
     
-	state->z_Position = Sonar1.distance(timeout);
+	state->z_position = Sonar1.distance(timeout);
 
-	double Pred_Xk_1 = state->z_Position;
+	double Pred_Xk_1 = state->z_position;
 
 	MedianFilter<double, 5> f;
 
@@ -86,22 +86,22 @@ int main(int argc, char **argv) {
 	R = [2,92e-3]
   */
   
-    KF(Pred_Xk_1, Pred_P_k_1, state->z_Position, &Xk, &Pk, Q, R); //kalman filter
+	KF(Pred_Xk_1, Pred_P_k_1, state->z_position, &Xk, &Pk, Q, R); //kalman filter
 
 	//update the covariance of the error and the states of both filters
 	Pred_P_k_1 = Pk; 
 	Pred_Xk_1 = Xk; 
 
 	//taking the distance from the sensor
-	state->z_Position = Sonar1.distance(timeout);
+	state->z_position = Sonar1.distance(timeout);
 	
 	//std::cout<<"" <<Sonar1.GetValidity()<< std::endl;	
 
-	state_filtr->z_Position = Xk; //filtered data
+	state_filtr->z_position = Xk; //filtered data
 	temp_plat_filtr.isValid = Sonar1.GetValidity();
 
 	//LCM STUFF TO DO THE VELOCITY
-	temp_plat_filtr.Z_Position = state_filtr->z_Position; //kalman position
+	temp_plat_filtr.Z_Position = state_filtr->z_position; //kalman position
 	
 	//velocity after kalman filter
 	EstimatedVelocity( &temp_plat_filtr, &temp_plat_prev_filtr, &stack_z2, &first2, tm, &integral_z2 );
@@ -111,12 +111,12 @@ int main(int argc, char **argv) {
 
 	//FOR PLOTTING THE VELOCITY
 	if( f.isReady() )
-		state_filtr->z_Velocity = f.getMedian();
+		state_filtr->z_velocity = f.getMedian();
 
 	else
-		state_filtr->z_Velocity = 0;
+		state_filtr->z_velocity = 0;
 
-    temp_plat_filtr.Z_Velocity = state_filtr->z_Velocity;
+    temp_plat_filtr.Z_Velocity = state_filtr->z_velocity;
         
 	PubSensorData->publish( state_filtr );
 

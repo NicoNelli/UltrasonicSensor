@@ -124,6 +124,50 @@ void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::Ultr
 
 }
 
+void KF(double Pred_Xk_1, double Pred_P_k_1,double  Zk, double *Xk, double *Pk,double Q, double R){
+/**
+Pred_Xk = F * Pred_Xk_1
+
+Pred_Pk = F * Pred_P_k_1 * F^t + Q
+
+Kk = Pred_Pk * H^t(H * Pred_Pk * H^t + R)^(-1)
+
+Xk = Pred_Xk + Kk * (Zk - H * Pred_Xk)
+
+Pk = (I - Kk * H) * Pred_Pk 
+
+In this case:
+
+F = [1]
+
+B = [0]
+
+H = [1]
+
+Q = [1e-4]
+
+R = [2,92e-3]
+
+**/
+
+double F = 1;
+double H = 1;
+//double Q = 1e-4;
+//double R = 2.92e-3;
+
+
+double Pred_Xk = F * Pred_Xk_1;
+
+double Pred_Pk = F * Pred_P_k_1 * F + Q;
+
+double Kk = Pred_Pk * H * ( 1/(H * Pred_Pk * H + R ) );
+
+ *Xk = Pred_Xk + Kk * (Zk - H * Pred_Xk);
+
+ *Pk = (1 - Kk * H) * Pred_Pk;
+
+
+}
 
 
 

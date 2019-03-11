@@ -1,154 +1,51 @@
-cmake_minimum_required(VERSION 2.8.3)
-
-set(CMAKE_CXX_FLAGS "-g -Wall")
-
+cmake_minimum_required(VERSION 3.5)
 project(ultrasonic_sensor)
-add_definitions(-std=c++11)
+
+
+#set(CMAKE_CXX_FLAGS "-g -Wall")
+
+set(CMAKE_CXX_STANDARD 14)
+
+#add_definitions(-std=c++11)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-
-find_package(rosidl_default_generators REQUIRED)#maybe not necessary
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(rmw_implementation REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(cmake_modules REQUIRED)
+#find_package(cmake_modules REQUIRED)
 find_package(geometry_msgs REQUIRED)
-
-
-find_package(OpenCV REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(LCM REQUIRED lcm)
-
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
 
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
-#add_message_files(
-#   FILES
-#   UltrasonicMsg.msg
-# )
-
-set(msg_files
-  "msg/UltrasonicMsg.msg"
-)
-
-## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#  DEPENDENCIES
-#  geometry_msgs std_msgs
-#)
+set(msg_files "msg/UltrasonicMsg.msg")
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
+  DEPENDENCIES builtin_interfaces
 )
 
 ament_export_dependencies(rosidl_default_runtime)
-
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ultrasonic_sensor
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs message_runtime
-#  DEPENDS system_lib
-)
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-include_directories(
-# include
-#  ${catkin_INCLUDE_DIRS}  
-#)
-
 include_directories(
 ${rclcpp_INCLUDE_DIRS}
 ${rmw_implementation_INCLUDE_DIRS}
 ${std_msgs_INCLUDE_DIRS}
-${Eigen_INCLUDE_DIR}
 ${geometry_msgs_INCLUDE_DIRS}
 )
-
-
-
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/ultrasonic_sensor.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 set(M2M_INCLUDE "$ENV{M2M_INCLUDE}")
@@ -161,18 +58,15 @@ endif()
 
 include_directories(include)
 
-#set(SOURCE_FILES  source/UltrasonicSensor.cpp include/UltrasonicSensor.h include/utils.h source/utils.cpp)
+set(SOURCE FILES source/UltrasonicSensor.cpp include/UltrasonicSensor.h)
 
-file(GLOB SOURCE_FILES include/"*.h" "source/*.cpp")
-
-add_library(UltrasonicSensor ${SOURCE_FILES})
+add_library(UltrasonicSensor source/UltrasonicSensor.cpp include/UltrasonicSensor.h)
 
 find_library(wiringPi_LIB wiringPi)
 
 target_link_libraries(UltrasonicSensor ${wiringPi_LIB} 
-									   ${Eigen_LIBRARIES}
-                                       ${OpenCV_LIBRARIES}
-									   ${LCM_LIBRARIES})
+				       ${LCM_LIBRARIES})
+
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -182,5 +76,8 @@ add_executable(${PROJECT_NAME}_node_Mocap2mav src/mainMocap2mav.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node_Mocap2mav UltrasonicSensor)
 
+rosidl_target_interfaces(${PROJECT_NAME}_node_Mocap2mav ${PROJECT_NAME} "rosidl_typesupport_cpp" )
+
 ament_target_dependencies(${PROJECT_NAME}_node_Mocap2mav rclcpp std_msgs geometry_msgs)
 
+ament_package()

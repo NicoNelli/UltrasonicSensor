@@ -51,6 +51,41 @@ void EstimatedVelocity(geometry::UltrasonicPosition *Actual_plat, geometry::Ultr
 
 //mean value.
 void mean(double& sum,double plus,double minus);
+
+/*
+Kalman filter with one state variable which is the distance obtained by the sen$
+
+Pseudo-code:
+
+Pred_Xk = F * Pred_Xk_1
+
+Pred_Pk = F * Pred_P_k_1 * F^t + Q
+
+Kk = Pred_Pk * H^t(H * Pred_Pk * H^t + R)^(-1)
+
+Xk = Pred_Xk + Kk * (Zk - H * Pred_Xk)
+
+Pk = (I - Kk * H) * Pred_Pk 
+
+--state: state variable
+
+--Pred_P_k_1: prediction of covariance
+
+--Zk: measurement
+
+--Xk: update the estimate of the state
+
+--Pk: update the covariance error
+
+--Q: covariance of process noise
+
+--R: covariance of the measurement noise
+*/
+void KF(double state, double Pred_P_k_1, double  Zk, double *Xk, double *Pk, double Q, double R);
+
+
+
+
 #endif
  
 

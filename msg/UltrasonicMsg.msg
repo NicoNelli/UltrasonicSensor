@@ -1,2 +1,2 @@
-float64 z_Position
-float64 z_Velocity
+float64 z_position
+float64 z_velocity
